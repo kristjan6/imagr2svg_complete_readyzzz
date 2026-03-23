@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { getJob, uploadBlueprint, fileUrl } from "./api";
+import { getJob, uploadImage, fileUrl } from "./api";
 
 export default function App() {
   const [dragActive, setDragActive] = useState(false);
@@ -12,7 +12,6 @@ export default function App() {
   useEffect(() => {
     if (!job?.job_id) return;
     if (job.status === "completed" || job.status === "failed") return;
-
     const timer = setInterval(async () => {
       try {
         const next = await getJob(job.job_id);
@@ -21,7 +20,6 @@ export default function App() {
         setError(err.message || "Statusoppdatering feilet");
       }
     }, 1200);
-
     return () => clearInterval(timer);
   }, [job]);
 
@@ -30,9 +28,8 @@ export default function App() {
     setJob(null);
     setShowDebug(false);
     setFileName(file.name);
-
     try {
-      const created = await uploadBlueprint(file);
+      const created = await uploadImage(file);
       const status = await getJob(created.job_id);
       setJob(status);
     } catch (err) {
@@ -55,11 +52,10 @@ export default function App() {
   return (
     <div className="page">
       <div className="card">
-        <h1>Blueprint → DXF</h1>
+        <h1>Bilde → SVG</h1>
         <p className="subtitle">
-          Last opp blueprint, skannet tegning eller PDF. Se preview, følg status, og last ned ferdig fil når jobben er klar.
+          Last opp et bilde (PNG, JPG, BMP, GIF, WEBP). Se preview, folg status, og last ned ferdig SVG-fil nar jobben er klar.
         </p>
-
         <div
           className={`dropzone ${dragActive ? "active" : ""}`}
           onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
@@ -71,49 +67,40 @@ export default function App() {
           <input
             ref={inputRef}
             type="file"
-            accept=".png,.jpg,.jpeg,.tif,.tiff,.bmp,.pdf"
+            accept=".png,.jpg,.jpeg,.tif,.tiff,.bmp,.gif,.webp"
             className="hidden-input"
             onChange={onChange}
           />
-          <div className="dropzone-title">Dra fil hit</div>
-          <div className="dropzone-text">eller klikk for å velge</div>
+          <div className="dropzone-title">Dra bilde hit</div>
+          <div className="dropzone-text">eller klikk for a velge</div>
         </div>
-
         {fileName && (
           <div className="panel">
             <div><strong>Fil:</strong> {fileName}</div>
           </div>
         )}
-
         {job?.preview_url && (
           <div className="panel">
-            <div className="section-title">Forhåndsvisning</div>
+            <div className="section-title">Forhandsvisning</div>
             <img className="preview-image" src={fileUrl(job.preview_url)} alt="Preview" />
           </div>
         )}
-
         {job && (
           <div className="panel">
             <div><strong>Status:</strong> {job.status}</div>
             <div><strong>Steg:</strong> {job.stage}</div>
-
             <div className="progress">
               <div className="progress-bar" style={{ width: `${job.progress}%` }} />
             </div>
-
             <div className="progress-text">{job.progress}%</div>
-
             {job.error && <div className="warning">{job.error}</div>}
-
             {job.status === "completed" && (
               <div className="downloads">
-                {job.output_dxf && <a className="button" href={fileUrl(job.output_dxf)}>Last ned DXF</a>}
-                {job.output_dwg && <a className="button secondary" href={fileUrl(job.output_dwg)}>Last ned DWG</a>}
+                {job.output_svg && <a className="button" href={fileUrl(job.output_svg)}>Last ned SVG</a>}
               </div>
             )}
           </div>
         )}
-
         {job?.debug_images?.length > 0 && (
           <div className="panel">
             <div className="debug-header">
@@ -122,7 +109,6 @@ export default function App() {
                 {showDebug ? "Skjul" : "Vis"}
               </button>
             </div>
-
             {showDebug && (
               <div className="debug-grid">
                 {job.debug_images.map((url) => (
@@ -135,7 +121,6 @@ export default function App() {
             )}
           </div>
         )}
-
         {error && <div className="error">{error}</div>}
       </div>
     </div>
