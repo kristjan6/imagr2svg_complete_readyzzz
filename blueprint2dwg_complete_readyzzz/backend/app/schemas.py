@@ -12,6 +12,5 @@ class JobResponse(BaseModel):
     progress: int
     error: str | None = None
     preview_url: str | None = None
-    output_dxf: str | None = None
-    output_dwg: str | None = None
+    output_svg: str | None = None
     debug_images: list[str] = []
