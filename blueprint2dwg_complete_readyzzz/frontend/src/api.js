@@ -1,6 +1,6 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
-export async function uploadBlueprint(file) {
+export async function uploadImage(file) {
   const form = new FormData();
   form.append("file", file);
 
